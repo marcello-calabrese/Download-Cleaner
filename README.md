@@ -55,11 +55,6 @@ Contributions are welcome! If you have any ideas for improvements or new feature
 
 If you encounter any bugs while using the application, please report them by opening an issue on the GitHub repository. Include as much detail as possible about the bug, including steps to reproduce it and any error messages you received.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-
 ## Acknowledgements
 
 - [Go Programming Language](https://golang.org/) - The language used to build this application.
