@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -52,7 +53,7 @@ func Scan(downloadsDir string, ageThreshold int) ([]FileEntry, error) {
 	now := time.Now()
 	threshold := time.Duration(ageThreshold) * 24 * time.Hour
 
-	var results []FileEntry
+	results := make([]FileEntry, 0, len(entries))
 
 	for _, de := range entries {
 		// Skip subdirectories (no recursion)
@@ -62,6 +63,7 @@ func Scan(downloadsDir string, ageThreshold int) ([]FileEntry, error) {
 
 		info, err := de.Info()
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not read metadata for %q: %v\n", de.Name(), err)
 			continue
 		}
 

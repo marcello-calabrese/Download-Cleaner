@@ -14,7 +14,7 @@ import (
 // Returns the subset of entries that were successfully moved, with DestPath
 // updated to reflect any conflict-resolution renaming.
 func Move(entries []scanner.FileEntry) ([]scanner.FileEntry, error) {
-	var moved []scanner.FileEntry
+	moved := make([]scanner.FileEntry, 0, len(entries))
 	var firstErr error
 
 	for i := range entries {
@@ -31,7 +31,15 @@ func Move(entries []scanner.FileEntry) ([]scanner.FileEntry, error) {
 		}
 
 		// Resolve any filename conflict before moving
-		entries[i].DestPath = resolveConflict(entries[i].DestPath)
+		resolvedDestPath, err := resolveConflict(entries[i].DestPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "  [error] cannot resolve destination for %s: %v\n", entries[i].Name, err)
+			if firstErr == nil {
+				firstErr = err
+			}
+			continue
+		}
+		entries[i].DestPath = resolvedDestPath
 
 		if err := os.Rename(entries[i].SourcePath, entries[i].DestPath); err != nil {
 			fmt.Fprintf(os.Stderr, "  [error] cannot move %s: %v\n", entries[i].Name, err)
@@ -55,9 +63,13 @@ func ensureDir(dir string) error {
 // resolveConflict checks whether destPath already exists. If so, it appends
 // _1, _2, … to the stem (before the extension) until a free slot is found.
 // Handles .tar.gz double extensions correctly.
-func resolveConflict(destPath string) string {
-	if _, err := os.Stat(destPath); os.IsNotExist(err) {
-		return destPath
+func resolveConflict(destPath string) (string, error) {
+	if _, err := os.Stat(destPath); err == nil {
+		// Continue to find a unique candidate.
+	} else if os.IsNotExist(err) {
+		return destPath, nil
+	} else {
+		return "", fmt.Errorf("cannot inspect destination %q: %w", destPath, err)
 	}
 
 	dir := filepath.Dir(destPath)
@@ -77,8 +89,12 @@ func resolveConflict(destPath string) string {
 
 	for i := 1; ; i++ {
 		candidate := filepath.Join(dir, fmt.Sprintf("%s_%d%s", stem, i, ext))
-		if _, err := os.Stat(candidate); os.IsNotExist(err) {
-			return candidate
+		if _, err := os.Stat(candidate); err == nil {
+			continue
+		} else if os.IsNotExist(err) {
+			return candidate, nil
+		} else {
+			return "", fmt.Errorf("cannot inspect candidate %q: %w", candidate, err)
 		}
 	}
 }

@@ -31,8 +31,12 @@ func main() {
 	}
 
 	info, err := os.Stat(downloadsDir)
-	if err != nil || !info.IsDir() {
-		fmt.Fprintf(os.Stderr, "error: %q is not a valid directory\n", downloadsDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: cannot access %q: %v\n", downloadsDir, err)
+		os.Exit(1)
+	}
+	if !info.IsDir() {
+		fmt.Fprintf(os.Stderr, "error: %q is not a directory\n", downloadsDir)
 		os.Exit(1)
 	}
 
@@ -45,7 +49,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	var actionable, skipped []scanner.FileEntry
+	actionable := make([]scanner.FileEntry, 0, len(entries))
+	skipped := make([]scanner.FileEntry, 0, len(entries))
 	for _, e := range entries {
 		if e.IsSkipped {
 			skipped = append(skipped, e)
@@ -93,7 +98,7 @@ func main() {
 	// Dry-run: write preview report and exit
 	if *flagDryRun {
 		fmt.Println("\n[dry-run] No files were moved.")
-		if err := reporter.Write(reportPath, actionable, skipped, true); err != nil {
+		if err := reporter.Write(reportPath, actionable, skipped, true, *flagAge); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: could not write report: %v\n", err)
 		} else {
 			fmt.Printf("Dry-run report written to: %s\n", reportPath)
@@ -113,7 +118,7 @@ func main() {
 		input = strings.TrimSpace(strings.ToLower(input))
 		switch input {
 		case "y", "yes":
-			fmt.Println("Great! Starting to organise your Downloads folder...")
+			fmt.Println("Great! Cleaning the folder now...")
 			goto doMove
 		case "n", "no", "":
 			fmt.Println("No problem! Your files have been left untouched.")
@@ -124,11 +129,11 @@ func main() {
 	}
 
 doMove:
-	fmt.Println("\nMoving files...")
+	fmt.Println("\nCleaning in progress...")
 	moved, moveErr := mover.Move(actionable)
-	fmt.Printf("All done! %d/%d file(s) successfully moved.\n", len(moved), len(actionable))
+	fmt.Printf("Cleaning finished! %d/%d file(s) successfully moved.\n", len(moved), len(actionable))
 
-	if err := reporter.Write(reportPath, moved, skipped, false); err != nil {
+	if err := reporter.Write(reportPath, moved, skipped, false, *flagAge); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: could not write report: %v\n", err)
 	} else {
 		fmt.Printf("Report written to: %s\n", reportPath)

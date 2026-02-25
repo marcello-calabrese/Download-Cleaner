@@ -15,7 +15,8 @@ import (
 // moved is the list of entries that were (or would be, in dry-run) moved.
 // skipped is the list of entries with unrecognised extensions left in place.
 // dryRun controls the mode label in the report header.
-func Write(reportPath string, moved []scanner.FileEntry, skipped []scanner.FileEntry, dryRun bool) error {
+// ageThreshold controls what qualifies as "old" for report labels.
+func Write(reportPath string, moved []scanner.FileEntry, skipped []scanner.FileEntry, dryRun bool, ageThreshold int) error {
 	f, err := os.Create(reportPath)
 	if err != nil {
 		return err
@@ -46,7 +47,7 @@ func Write(reportPath string, moved []scanner.FileEntry, skipped []scanner.FileE
 		for _, fe := range moved {
 			flags := ""
 			if fe.IsOld {
-				flags = "[OLD >365d]"
+				flags = fmt.Sprintf("[OLD >%dd]", ageThreshold)
 			}
 			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n",
 				fe.Name, displayCategory(fe), flags, fe.DestPath)
@@ -57,14 +58,14 @@ func Write(reportPath string, moved []scanner.FileEntry, skipped []scanner.FileE
 	}
 
 	// Section 2: old files flagged
-	var old []scanner.FileEntry
+	old := make([]scanner.FileEntry, 0, len(moved))
 	for _, fe := range moved {
 		if fe.IsOld {
 			old = append(old, fe)
 		}
 	}
 	fmt.Fprintf(w, "\n%s\n", sep)
-	fmt.Fprintf(w, "OLD FILES FLAGGED (%d files older than 365 days, moved to Archive/)\n\n", len(old))
+	fmt.Fprintf(w, "OLD FILES FLAGGED (%d files older than %d days, moved to Archive/)\n\n", len(old), ageThreshold)
 	if len(old) > 0 {
 		for _, fe := range old {
 			fmt.Fprintf(w, "  - %-50s  (last modified: %s)\n",
