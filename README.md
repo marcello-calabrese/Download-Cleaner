@@ -10,6 +10,32 @@ A simple Go program to clean your Downloads folder by moving files into category
 - Supports dry-run mode (`-dry-run`) to generate a report without changing files.
 - Moves files older than a configurable threshold (`-age`) into `Archive/`.
 
+## Build release ZIPs for non-technical Windows users
+
+This project includes a packaging script that creates ready-to-share ZIP files for both common Windows CPU types:
+
+- `windows-amd64` (most Windows 10/11 PCs)
+- `windows-arm64` (Windows on ARM devices)
+
+From the project root in PowerShell:
+
+```powershell
+.\scripts\build-release.ps1 -Version v1.0.0
+```
+
+Output:
+
+- `dist/download-cleaner-v1.0.0-windows-amd64.zip`
+- `dist/download-cleaner-v1.0.0-windows-arm64.zip`
+
+Each ZIP already contains:
+
+- `download-cleaner.exe`
+- `Run Download Cleaner.bat` (double-click launcher)
+- `How to Use Download Cleaner.txt` (user instructions)
+
+Users do **not** need Go installed.
+
 ## Usage
 
 1. Clone the repository:

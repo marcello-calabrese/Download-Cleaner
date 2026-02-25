@@ -22,12 +22,12 @@ func main() {
 	// Resolve downloads directory
 	downloadsDir := *flagPath
 	if downloadsDir == "" {
-		home, err := os.UserHomeDir()
+		resolved, err := defaultDownloadsDir()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: cannot determine home directory: %v\n", err)
+			fmt.Fprintf(os.Stderr, "error: cannot determine Downloads directory: %v\n", err)
 			os.Exit(1)
 		}
-		downloadsDir = filepath.Join(home, "Downloads")
+		downloadsDir = resolved
 	}
 
 	info, err := os.Stat(downloadsDir)

@@ -1,0 +1,16 @@
+Download Cleaner - Quick Start (Windows 10/11)
+
+1) Right-click the ZIP file and choose "Extract All..."
+2) Open the extracted folder
+3) Double-click "Run Download Cleaner.bat"
+4) Review the file preview in the window
+5) Type Y and press Enter to clean your Downloads folder, or type N to cancel
+
+What the app does:
+- Moves recognized file types into folders (Documents, Images, Archives, Executables)
+- Moves old files into Archive
+- Leaves unknown file types in place
+
+Important:
+- The app targets the currently logged-in user's Downloads folder
+- Keep "Run Download Cleaner.bat" and "download-cleaner.exe" in the same folder

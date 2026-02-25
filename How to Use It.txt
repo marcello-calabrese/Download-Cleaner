@@ -1,3 +1,10 @@
-1 - Open the terminal
+Developer quick steps
 
-2 - type .\download-cleaner.exe and press enter
+1 - Open PowerShell in the project root
+
+2 - Build shareable ZIP files for Windows users:
+	.\scripts\build-release.ps1 -Version v1.0.0
+
+3 - Send users the ZIP for their system (amd64 for most PCs, arm64 for ARM devices)
+
+4 - Users extract ZIP and run "Run Download Cleaner.bat"
